@@ -48,6 +48,8 @@ set day [lindex $day_numb 1]
 set hour [lindex $hour_numb 1]
 set month [lindex $month_numb 1]
 set year [lindex $year_numb 1]
+set rpower [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@rpower)}]
+set spower [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@spower)}]
 
 set cloudiness [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@cloudiness)}]
 switch -exact -- $cloudiness {
