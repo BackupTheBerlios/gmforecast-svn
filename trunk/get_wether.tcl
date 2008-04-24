@@ -46,14 +46,16 @@ set odessa_data [http::data $odessa_token]
 
 set odessa_doc [dom parse $odessa_data]
 #set root [$odessa_doc documentElement]
+# Town
+set sname [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/@sname)}]
+set index [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/@index)}]
+set latitude [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/@latitude)}]
+set longitude [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/@longitude)}]
+
 set hours [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@hour]
 set days [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@day]
 set months [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@month]
 set years [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@year]
-set sname [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@sname]
-set index [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@index]
-set latitude [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@latitude]
-set longitude [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@longitude]
 
 foreach day_numb $days hour_numb $hours month_numb $months year_numb $years {
 #FORECAST
@@ -159,11 +161,11 @@ set heat_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@d
 
 puts "Город: $sname $index $latitude $longitude"
 puts "Дата: $day $month $year $weekday Время: $hour.00 $tod"
-puts "Температура: $temperature_min ... $temperature_max C"
+puts "Температура: $temperature_min...$temperature_max C"
 puts "Атмосферные явления: $sky $precipitation"
-puts "Ветер: $wind_direction, $wind_min ... $wind_max м/c"
-puts "Влажность: $relwet_min ... $relwet_max %"
-puts "Комфорт: $heat_min ... $heat_max C"
+puts "Ветер: $wind_direction, $wind_min...$wind_max м/c"
+puts "Влажность: $relwet_min...$relwet_max %"
+puts "Комфорт: $heat_min...$heat_max C"
 puts "\n"
 }
 
