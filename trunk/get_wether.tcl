@@ -1,7 +1,7 @@
 #!sh
 # -*- tcl -*-
 # The next line is executed by /bin/sh, but not tcl \
-exec tclsh "$0" ${1+"$@"}
+exec wish "$0" ${1+"$@"}
 
 #Описание формата
 #<TOWN index="27612" sname="%CC%EE%F1%EA%E2%E0" latitude="56" longitude="38">
@@ -159,14 +159,29 @@ set relwet_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[
 set heat_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/HEAT/@max)}]
 set heat_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/HEAT/@min)}]
 
-puts "Город: $sname $index $latitude $longitude"
-puts "Дата: $day $month $year $weekday Время: $hour.00 $tod"
-puts "Температура: $temperature_min...$temperature_max C"
-puts "Атмосферные явления: $sky $precipitation"
-puts "Ветер: $wind_direction, $wind_min...$wind_max м/c"
-puts "Влажность: $relwet_min...$relwet_max %"
-puts "Комфорт: $heat_min...$heat_max C"
-puts "\n"
+##puts "Город: $sname $index $latitude $longitude"
+
+#puts "Дата: $day $month $year $weekday Время: $hour.00 $tod"
+#puts "Температура: $temperature_min...$temperature_max C"
+#puts "Атмосферные явления: $sky $precipitation"
+#puts "Ветер: $wind_direction, $wind_min...$wind_max м/c"
+#puts "Влажность: $relwet_min...$relwet_max %"
+#puts "Комфорт: $heat_min...$heat_max C"
+#puts "\n"
+wm title . gmForecast
+frame .toppy -borderwidth 10
+pack .toppy -side top -fill x
+
+button .toppy.refresh -text Hello -command {$log insert end "Температура"}
+button .toppy.quit -text Quit -command exit
+pack .toppy.refresh -side right
+
+
+frame .t
+set log [text .t.log -width 80 -height 10 -borderwidth 2 -relief raised -setgrid true]
+pack .t.log -side left -fill both -expand true
+pack .t -side top -fill both -expand true
+
 }
 
 
