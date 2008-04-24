@@ -4,6 +4,16 @@
 exec tclsh "$0" ${1+"$@"}
 
 #Описание формата
+#<TOWN index="27612" sname="%CC%EE%F1%EA%E2%E0" latitude="56" longitude="38">
+#FORECAST day="17" month="4" year="2008" hour="21" tod="3" predict="18" weekday="5">
+#<PHENOMENA cloudiness="2" precipitation="10" rpower="0" spower="0"/>
+#<PRESSURE max="755" min="753"/>
+#<TEMPERATURE max="10" min="8"/>
+#<WIND min="3" max="6" direction="4"/>
+#<RELWET max="65" min="60"/>
+#<HEAT min="7" max="9"/>
+#</FORECAST>
+#
 #TOWN     информация о пункте прогнозирования:
 #  index     уникальный пятизначный код города
 #  sname     закодированное название города
@@ -31,7 +41,6 @@ exec tclsh "$0" ${1+"$@"}
 package require tdom
 package require http
 
-# Файлик нужно сливать и записывать как темповый, потом анализировать уже его, в конце анализа удалять.
 set odessa_token [http::geturl http://informer.gismeteo.ua/xml/33837_1.xml]
 set odessa_data [http::data $odessa_token]
 
@@ -41,13 +50,27 @@ set hours [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@hour]
 set days [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@day]
 set months [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@month]
 set years [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/FORECAST/@year]
-
+set sname [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@sname]
+set index [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@index]
+set latitude [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@latitude]
+set longitude [$odessa_doc selectNodes /MMWEATHER/REPORT/TOWN/TOWN/@longitude]
 
 foreach day_numb $days hour_numb $hours month_numb $months year_numb $years {
+#FORECAST
 set day [lindex $day_numb 1]
 set hour [lindex $hour_numb 1]
 set month [lindex $month_numb 1]
 set year [lindex $year_numb 1]
+set tod_xml [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/@tod)}]
+
+switch -exact -- $tod_xml {
+    0 {set tod "ночь"}
+    1 {set tod "утро"}
+    2 {set tod "день"}
+    3 {set tod "вечер"}
+}
+
+# PHENOMENA part
 set rpower [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@rpower)}]
 set spower [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@spower)}]
 
@@ -60,13 +83,37 @@ switch -exact -- $cloudiness {
 }
 set precipitation_xml [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PHENOMENA/@precipitation)}]
 switch -exact -- $precipitation_xml {
-    4 {set precipitation "Дождь"}
-    5 {set precipitation "Ливень"}
-    6 {set precipitation "Снег"}
-    7 {set precipitation "Снег"}
-    8 {set precipitation "Гроза"}
-    9 {set precipitation "Нет данных"}
-    10 {set precipitation "Без осадков"}
+    4 {
+        if {$rpower == 1} {
+        set precipitation "дождь"
+        } else {
+        set precipitation "возможен дождь"
+        }
+    }
+    5 {set precipitation "ливень"}
+    6 {
+        if {$rpower == 1} {
+        set precipitation "снег"
+        } else {
+        set precipitation "возможен снег"
+        }
+    }
+    7 {
+        if {$rpower == 1} {
+        set precipitation "снег"
+        } else {
+        set precipitation "возможен снег"
+        }
+    }
+    8 {
+        if {$rpower == 1} {
+        set precipitation "гроза"
+        } else {
+        set precipitation "возможна гроза"
+        }
+    }
+    9 {set precipitation "информация об осадках осуцтвует"}
+    10 {set precipitation "без осадков"}
 }
 
 set weekday_xml [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/@weekday)}]
@@ -79,23 +126,45 @@ switch -exact -- $weekday_xml {
     6 {set weekday "Пятница"}
     7 {set weekday "Суббота"}
 }
+# PRESSURE in mm. Hg
+set pressure_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PRESSURE/@max)}]
+set pressure_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/PRESSURE/@min)}]
 
-puts "Дата: $day $month $year $weekday Время: $hour"
-puts "Temp max: [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/TEMPERATURE/@max)}]"
-puts "Temp min: [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/TEMPERATURE/@min)}]"
-puts "Время суток: [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/@tod)}]"
-puts "Атмосферные явления: $sky $precipitation"
+#TEMPERATURE in C
+set temperature_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/TEMPERATURE/@max)}]
+set temperature_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/TEMPERATURE/@min)}]
 
-puts "\n"
+# WIND part
+set wind_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/WIND/@max)}]
+set wind_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/WIND/@min)}]
+set wind_direction_xml [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/WIND/@direction)}]
+switch -exact -- $wind_direction_xml {
+    0 {set wind_direction "северный"}
+    1 {set wind_direction "северо-восточный"}
+    2 {set wind_direction "восточный"}
+    3 {set wind_direction "юго-восточный"}
+    4 {set wind_direction "южный"}
+    5 {set wind_direction "юго-западный"}
+    6 {set wind_direction "западный"}
+    7 {set wind_direction "северо-западный"}
 }
 
-#FORECAST day="17" month="4" year="2008" hour="21" tod="3" predict="18" weekday="5">
-#<PHENOMENA cloudiness="2" precipitation="10" rpower="0" spower="0"/>
-#<PRESSURE max="755" min="753"/>
-#<TEMPERATURE max="10" min="8"/>
-#<WIND min="3" max="6" direction="4"/>
-#<RELWET max="65" min="60"/>
-#<HEAT min="7" max="9"/>
-#</FORECAST>
+# RELWET
+set relwet_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/RELWET/@max)}]
+set relwet_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/RELWET/@min)}]
+
+# HEAT
+set heat_max [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/HEAT/@max)}]
+set heat_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@day=$day][@hour=$hour][@month=$month][@year=$year]/HEAT/@min)}]
+
+puts "Город: $sname $index $latitude $longitude"
+puts "Дата: $day $month $year $weekday Время: $hour.00 $tod"
+puts "Температура: $temperature_min ... $temperature_max C"
+puts "Атмосферные явления: $sky $precipitation"
+puts "Ветер: $wind_direction, $wind_min ... $wind_max м/c"
+puts "Влажность: $relwet_min ... $relwet_max %"
+puts "Комфорт: $heat_min ... $heat_max C"
+puts "\n"
+}
 
 
