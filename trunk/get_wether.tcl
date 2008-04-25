@@ -41,6 +41,21 @@ exec wish "$0" ${1+"$@"}
 package require tdom
 package require http
 
+wm title . gmForecast
+frame .toppy -borderwidth 10
+pack .toppy -side top -fill x
+button .toppy.refresh -text Hello -command gismeteo
+button .toppy.quit -text Quit -command exit
+pack .toppy.refresh .toppy.quit -side right
+
+
+frame .t
+set log [text .t.log -width 80 -height 10 -borderwidth 2 -relief raised -setgrid true]
+pack .t.log -side left -fill both -expand true
+pack .t -side top -fill both -expand true
+
+proc gismeteo {} {
+    global log
 set odessa_token [http::geturl http://informer.gismeteo.ua/xml/33837_1.xml]
 set odessa_data [http::data $odessa_token]
 
@@ -168,20 +183,9 @@ set heat_min [$odessa_doc selectNodes {string(/MMWEATHER/REPORT/TOWN/FORECAST[@d
 #puts "Влажность: $relwet_min...$relwet_max %"
 #puts "Комфорт: $heat_min...$heat_max C"
 #puts "\n"
-wm title . gmForecast
-frame .toppy -borderwidth 10
-pack .toppy -side top -fill x
-
-button .toppy.refresh -text Hello -command {$log insert end "Температура"}
-button .toppy.quit -text Quit -command exit
-pack .toppy.refresh -side right
-
-
-frame .t
-set log [text .t.log -width 80 -height 10 -borderwidth 2 -relief raised -setgrid true]
-pack .t.log -side left -fill both -expand true
-pack .t -side top -fill both -expand true
-
+$log insert end "Дата: $day $month $year $weekday Время: $hour.00 $tod"
+$log insert end "Температура: $temperature_min...$temperature_max C"
+}
 }
 
 
