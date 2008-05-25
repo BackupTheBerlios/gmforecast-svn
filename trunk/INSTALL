@@ -1,0 +1,14 @@
+You need the following software:
+
+TCL/TK 8.4 or above
+TDOM extension
+
+I recomed to install Active tcl. It includes all you need from the box.
+
+To run the GMforecast, execute followng steps:
+
+1. Copy gmforecast directory anywhere you like, for example in /home/peter/gmforecast
+2. Run the script
+$ sh /home/peter/gmforecast/get_wether_cli.sh
+Or make it executable and run as regular exec file.
+3. Enjoy the weather forecast.

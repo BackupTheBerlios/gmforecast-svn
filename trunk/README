@@ -1,0 +1,15 @@
+
+GMforecast is a small XML reader for gismeteo.com. It is written in TCL and uses TDOM as XML parser. 
+It is simple, but allows you just watch the weather without pain.
+
+Currently CLI (Command Line Inetface) version og GMforecast is almost finished, it can satisfy 
+newbie user needs. So the main goal is development is different GUI versions lyke screenlets or so.
+
+
+ ._        ..        .  
+ |, _  _  _||_  _. _.;_/
+ | (/,(/,(_][_)(_](_.| \
+ ------------------------
+
+If you have any problems with GMforecast feel free to write me to <skvantos@gmail.com> 
+or contact me on ICQ 280 964 672
