@@ -14,6 +14,9 @@ exec tclsh "$0" ${1+"$@"}
 #<HEAT min="7" max="9"/>
 #</FORECAST>
 #
+#<patthoyts> Russian? % encoding convertfrom cp1251 [::uri::urn::unquote %CC%EE%F1%EA%E2%E0]
+#<ijchain> <patthoyts> Москва
+#<patthoyts> The following runs through all of them: foreach e [encoding names] { puts [list $e [encoding convertfrom $e [::uri::urn::unquote %CC%EE%F1%EA%E2%E0]]] }
 #TOWN     информация о пункте прогнозирования:
 #  index     уникальный пятизначный код города
 #  sname     закодированное название города
